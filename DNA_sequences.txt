@@ -1,0 +1,8 @@
+>Gene A
+ACCGAGTTT
+
+>Gene B
+GATACCGGTT
+
+>Gene C
+ACCTGAG
