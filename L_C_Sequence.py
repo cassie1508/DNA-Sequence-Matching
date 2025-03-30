@@ -1,4 +1,5 @@
 def longest_common_sequence(X, Y):
+    print("\nComparing using Longest Common Sequence...\n")
     m = len(X)
     n = len(Y)
     LCS = [[0 for i in range(n + 1)] for j in range(m + 1)]

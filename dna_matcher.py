@@ -1,4 +1,5 @@
 # dna_matcher.py
+from L_C_Sequence import *
 
 def read_fasta_file(filename):
     sequences = {}
@@ -22,6 +23,8 @@ def read_fasta_file(filename):
 
 
 def longest_common_substring(s, t):
+    #can you let it print the string of characters itself?
+    
     n = len(s)
     m = len(t)
     dp = [[0] * (m + 1) for _ in range(n + 1)]
@@ -36,12 +39,25 @@ def longest_common_substring(s, t):
     return max_len
 
 
-def compute_similarity(s, t):
-    return longest_common_substring(s, t)
+def compute_similarity(algorithm, s, t):
+    # while True:
+    #     try:
+    if algorithm == "1":
+        print("\nComparing using Longest Common Substring...\n")
+        return longest_common_substring(s,t)
+    elif algorithm == "2":
+        print("\nComparing using Longest Common Sequence...\n")
+        return longest_common_sequence(s,t)
+                
+    # elif algorithm == "3":
+        # except ValueError:
+    else:
+        print("Invalid option. Please select a valid algorithm.")
+    
 
 
 def main():
-    print("🧬 DNA Sequence Matcher - Project A 🧬\n")
+    print("🧬 DNA Sequence Matcher🧬\n")
     query_file = input("Enter the query file name (e.g. DNA_query.txt): ").strip()
     db_file = input("Enter the database file name (e.g. DNA_sequences.txt): ").strip()
 
@@ -49,21 +65,22 @@ def main():
         query_data = read_fasta_file(query_file)
         db_data = read_fasta_file(db_file)
     except FileNotFoundError:
-        print("❌ File not found. Please check the filenames.")
+        print("File not found. Please check the filenames.")
         return
 
     if len(query_data) != 1:
-        print("❌ Query file must contain exactly one sequence.")
+        print("Query file must contain exactly one sequence.")
         return
 
     query_name, query_seq = list(query_data.items())[0]
 
-    print("\n🔍 Comparing using Longest Common Substring...\n")
+    algorithm = input("Select matching algorithm (1 for Longest Common Substring\n, 2 for Longest Common Subsequence \n and 3 for ...): ")
+    
 
     best_score = float('-inf')
     best_name = ""
     for name, sequence in db_data.items():
-        score = compute_similarity(sequence, query_seq)
+        score = compute_similarity(algorithm, sequence, query_seq)
         print(f"→ Similarity with '{name}': {score}")
         if score > best_score:
             best_score = score
@@ -72,6 +89,7 @@ def main():
     print("\n✅ Most similar sequence found:")
     print(f"🧬 Name: {best_name}")
     print(f"📊 Score: {best_score}")
+    return 
 
 
 if __name__ == "__main__":
