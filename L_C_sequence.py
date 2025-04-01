@@ -26,6 +26,6 @@ def longest_common_sequence(X, Y):
     lcs_string = ''.join(lcs_items)
  
     
-    return lcs_string
+    return len(lcs_string), lcs_string
 
 print(longest_common_sequence("ACADB", "CBDA"))
