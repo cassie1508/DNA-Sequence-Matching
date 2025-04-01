@@ -23,6 +23,8 @@ def read_fasta_file(filename):
             sequences[name] = ''.join(seq_lines).upper()
     return sequences
 
+# def validate_fasta_file(filename):
+
 def main():
     print("🧬 DNA Sequence Matcher - Longest Common Substring Only 🧬\n")
 
@@ -42,7 +44,7 @@ def main():
         return
 
     # Try up to 3 times to get a valid database file
-    for attempt in range(3):
+    for _ in range(3):
         db_file = input("Enter the database file name (e.g. DNA_sequences.txt): ").strip()
         try:
             db_data = read_fasta_file(db_file)
@@ -67,7 +69,7 @@ def main():
       return
 
     # Initialize best match tracking
-    best_score = float('-inf')
+    best_score = float('-inf') if option != "2" else float('inf')
     best_name = ""
     best_match_segment = ""
     results = []
@@ -83,7 +85,12 @@ def main():
           score, segment = longest_common_sequence(sequence, query_seq)
         results.append((name, score, segment))
         print(f"→ Similarity with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
-        if score > best_score:
+
+        if score > best_score and (option == "1" or option == "3"):
+            best_score = score
+            best_name = name
+            best_match_segment = segment
+        elif option == "2" and score < best_score:
             best_score = score
             best_name = name
             best_match_segment = segment
