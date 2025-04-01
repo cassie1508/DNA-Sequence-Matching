@@ -3,13 +3,13 @@ def longest_common_sequence(X, Y):
     n = len(Y)
 
     LCS = [[0 for i in range(n + 1)] for j in range(m + 1)]
-    for i in range(m+1): 
-        for j in range(n+1):  
+    for i in range(m+1):
+        for j in range(n+1):
             if i== 0 or  j == 0:
                 LCS[i][j] = 0
             elif X[i-1] == Y[j-1]:
                 LCS[i][j] = 1 + LCS[i-1][j-1]
-            else: 
+            else:
                 LCS[i][j] = max(LCS[i-1][j], LCS[i][j-1])
     i, j = m, n
     lcs_items = []
@@ -24,8 +24,8 @@ def longest_common_sequence(X, Y):
             j -= 1
     lcs_items.reverse()
     lcs_string = ''.join(lcs_items)
- 
-    
-    return lcs_string
+
+    print(f"Longest Common Subsequence: {lcs_string}")
+    return len(lcs_string), lcs_string
 
 print(longest_common_sequence("ACADB", "CBDA"))

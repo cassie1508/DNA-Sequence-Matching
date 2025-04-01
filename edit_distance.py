@@ -55,17 +55,17 @@ def find_best_alignment(database, target):
             best_distance = distance
             best_sequence = seq
 
-    return best_sequence, best_distance
+    return best_distance, best_sequence
 
 
-if __name__ == "__main__":
-    dna_database = [
-        "ATGCGTAC",
-        "ATCCGTAG",
-        "ATGCGTAA",
-        "ATGCGTGC"
-    ]
-    target_dna = "ATGCGTAT"
+# if __name__ == "__main__":
+#     dna_database = [
+#         "ATGCGTAC",
+#         "ATCCGTAG",
+#         "ATGCGTAA",
+#         "ATGCGTGC"
+#     ]
+#     target_dna = "ATGCGTAT"
 
-    best_seq, best_dist = find_best_alignment(dna_database, target_dna)
-    print(f"Best matching sequence: {best_seq} with edit distance: {best_dist}")
+#     best_seq, best_dist = find_best_alignment(dna_database, target_dna)
+#     print(f"Best matching sequence: {best_seq} with edit distance: {best_dist}")

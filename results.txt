@@ -1,9 +1,9 @@
 Query: query
 Algorithm: Longest Common Substring
-Best Match: HSGLTH1 Human theta 1-globin gene (Score: 10)
-Matching Segment: GCCCTGTGGA
+Best Match: BTBSCRYR (Score: 582)
+Matching Segment: [not shown]
 
 All Matches:
-HSGLTH1 Human theta 1-globin gene: Score = 10, Match = GCCCTGTGGA
-BTBSCRYR: Score = 9, Match = CCTGCAGGG
-random sequence 1 consisting of 1000 bases.: Score = 9, Match = TTTCTTCAC
+BTBSCRYR: Score = 582, Match = [not shown]
+random sequence 1 consisting of 1000 bases.: Score = 562, Match = [not shown]
+HSGLTH1 Human theta 1-globin gene: Score = 558, Match = [not shown]
