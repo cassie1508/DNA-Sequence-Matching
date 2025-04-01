@@ -80,8 +80,7 @@ def main():
           score = edit_distance(sequence, query_seq)
           segment = ""
         else:
-          score = longest_common_sequence(sequence, query_seq)
-          segment = ""
+          score, segment = longest_common_sequence(sequence, query_seq)
         results.append((name, score, segment))
         print(f"→ Similarity with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
         if score > best_score:
