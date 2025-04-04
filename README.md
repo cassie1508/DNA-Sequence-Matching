@@ -49,11 +49,4 @@ In `results.txt`, the output includes the query name, algorithm used, best match
 
 ## Purpose
 
-This project was created as a way to learn how different string comparison algorithms work in the context of biological data. It's useful for understanding algorithm efficiency, data parsing, and simple applications of bioinformatics in Python. It also helped reinforce how to work with user input, file handling, and formatted output.
-
-## Future Improvements
-
-- Add error checking for malformed FASTA files
-- Display aligned sequences visually
-- Implement scoring matrices for more nuanced comparisons
-- Build a graphical or web-based interface for easier use
+This project was created as a way to learn how different string comparison algorithms work in the context of biological data. It's useful for understanding algorithm efficiency, data parsing, and simple applications of bioinformatics in Python. It also helped reinforce how to work with user input, file hand
