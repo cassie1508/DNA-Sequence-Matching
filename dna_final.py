@@ -23,7 +23,55 @@ def read_fasta_file(filename):
             sequences[name] = ''.join(seq_lines).upper()
     return sequences
 
-# def validate_fasta_file(filename):
+def interpret_results(results, query_seq, option):
+    """Interprets results with query-centric strength classification."""
+    
+    # Sort results based on algorithm
+    if option == "2":  # Edit Distance (lower = better)
+        sorted_results = sorted(results, key=lambda x: x[1])
+    else:  # LCS or LCSubstring (higher = better)
+        sorted_results = sorted(results, key=lambda x: x[1], reverse=True)
+    
+    top_3 = sorted_results[:3]
+    
+    print("\n📊 Interpretation of Top 3 Results (Query-Centric):")
+    for i, (name, score, segment) in enumerate(top_3, 1):
+        target_len = len(segment) if segment else len(query_seq)  # Fallback
+        
+        if option == "1":  # Longest Common Substring
+            query_coverage = (score / len(query_seq)) * 100
+            strength = classify_match_strength(query_coverage)
+            print(f"{i}. {name}:")
+            print(f"   Substring length: {score} bases")
+            print(f"   Query Coverage: {query_coverage:.2f}% → {strength} match")
+            if strength == "Low":
+                print("Weak alignment")
+        
+        elif option == "2":  # Edit Distance
+            max_len = max(len(query_seq), target_len)
+            similarity = (1 - (score / max_len)) * 100
+            strength = classify_match_match_strength(similarity)
+            print(f"{i}. {name}:")
+            print(f"   Edit Distance: {score}")
+            print(f"   Similarity: {similarity:.2f}% → {strength} match")
+        
+        elif option == "3":  # Longest Common Subsequence (LCS)
+            query_coverage = (score / len(query_seq)) * 100
+            strength = classify_match_strength(query_coverage)
+            print(f"{i}. {name}:")
+            print(f"   LCS length: {score} bases")
+            print(f"   Query Coverage: {query_coverage:.2f}% → {strength} match")
+            if strength == "Strong":
+                print(" ✅ High confidence: Query is largely conserved in target.")
+def classify_match_strength(coverage):
+    """Classifies the match strength based on query coverage percentage."""
+    if coverage < 60:
+        return "Low"
+    elif 60 <= coverage < 75:
+        return "Medium"
+    else:
+        return "Strong"
+    
 
 def main():
     print("🧬 DNA Sequence Matcher - Longest Common Substring Only 🧬\n")
@@ -75,6 +123,7 @@ def main():
     results = []
     best_interpretation = ""
     best_similarity = 0.0
+    
 
     # Compare query to each database sequence
     if option == "1" or option == "3":
@@ -139,6 +188,20 @@ def main():
                 print(f"Similarity: {res[2]:.2f}")
                 print(f"Interpretation: {res[3]}")
                 print()
+    # Interpret the score
+    interprate_score = input("Would You like to interprate the score? (yes/no): ").strip().lower()
+    if interprate_score == "yes":
+        interpret_results(results, query_seq, option)
+
+    # Write results to a file
+    with open("results.txt", "w") as out:
+        out.write(f"Query: {query_name}\n")
+        out.write("Algorithm: Longest Common Substring\n")
+        out.write(f"Best Match: {best_name} (Score: {best_score})\n")
+        out.write(f"Matching Segment: {best_match_segment if best_match_segment else '[not shown]'}\n\n")
+        out.write("All Matches:\n")
+        for name, score, segment in sorted(results, key=lambda x: x[1], reverse=True):
+            out.write(f"{name}: Score = {score}, Match = {segment if segment else '[not shown]'}\n")
 
         if not found_match:
             print("❌ None of the sequences are moderately or highly similar to the query sequence.")
