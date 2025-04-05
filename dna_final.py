@@ -50,9 +50,6 @@ def interpret_results(results, query_seq, option):
         print(f" {label} Length: {score}")
         print(f" Query percentage: {similarity * 100:.2f}% : {interpretation} match")
 
-
-    
-
 def main():
     print("🧬 DNA Sequence Matcher - Longest Common Substring Only 🧬\n")
 
@@ -103,7 +100,7 @@ def main():
     results = []
     best_interpretation = ""
     best_similarity = 0.0
-    
+
 
     # Compare query to each database sequence
 
@@ -129,7 +126,7 @@ def main():
         print(f"→ Match with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
         if score > best_score:
             best_score, best_name, best_segment = score, name, segment
-    
+
     print("\n✅ Most similar sequence found:")
     print(f"🧬 Name: {best_name}")
     print(f"📊 Score: {best_score}")
@@ -139,6 +136,21 @@ def main():
         print(f"💭Interpretation: {best_interpretation}")
         print(f"✨ Similarity: {best_similarity:.2f}")
         print("\nSequences with High or Moderate Similarity:")
+
+        found_match = False
+
+        for res in results:
+            if res[3] in ["Highly similar", "Moderately similar"]:
+                found_match = True
+                print(f"Sequence: {res[0]}")
+                print(f"Edit Distance: {res[1]}")
+                print(f"Similarity: {res[2]:.2f}")
+                print(f"Interpretation: {res[3]}")
+                print()
+
+        if not found_match:
+            print("❌ None of the sequences are moderately or highly similar to the query sequence.")
+
         interpret_score = input("\n Would you like to interpret the top 3 results? (yes/no): ").strip().lower()
         if interpret_score == "yes":
             print("\n📊 Interpretation of Top 3 Results (Edit Distance):")
@@ -171,19 +183,6 @@ def main():
                 out.write(f"{name}: Score = {score}, Segment = {segment if segment else '[not shown]'}\n")
 
     print("\n📝 Results saved to 'results.txt'")
-
-    # # Write results to a file
-    # with open("results.txt", "w") as out:
-    #     out.write(f"Query: {query_name}\n")
-    #     out.write("Algorithm: Longest Common Substring\n")
-    #     out.write(f"Best Match: {best_name} (Score: {best_score})\n")
-    #     out.write(f"Matching Segment: {best_match_segment if best_match_segment else '[not shown]'}\n\n")
-    #     out.write("All Matches:\n")
-    #     for name, score, segment,  in sorted(results, key=lambda x: x[1], reverse=True):
-    #         out.write(f"{name}: Score = {score}, Match = {segment if segment else '[not shown]'}\n")
-
-    # print("\n📝 Results saved to 'results.txt'")
-
 
 if __name__ == "__main__":
     main()
