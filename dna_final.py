@@ -23,54 +23,34 @@ def read_fasta_file(filename):
             sequences[name] = ''.join(seq_lines).upper()
     return sequences
 
-def interpret_results(results, query_seq, option):
-    """Interprets results with query-centric strength classification."""
-    
-    # Sort results based on algorithm
-    if option == "2":  # Edit Distance (lower = better)
-        sorted_results = sorted(results, key=lambda x: x[1])
-    else:  # LCS or LCSubstring (higher = better)
-        sorted_results = sorted(results, key=lambda x: x[1], reverse=True)
-    
-    top_3 = sorted_results[:3]
-    
-    print("\n📊 Interpretation of Top 3 Results (Query-Centric):")
-    for i, (name, score, segment) in enumerate(top_3, 1):
-        target_len = len(segment) if segment else len(query_seq)  # Fallback
-        
-        if option == "1":  # Longest Common Substring
-            query_coverage = (score / len(query_seq)) * 100
-            strength = classify_match_strength(query_coverage)
-            print(f"{i}. {name}:")
-            print(f"   Substring length: {score} bases")
-            print(f"   Query Coverage: {query_coverage:.2f}% → {strength} match")
-            if strength == "Low":
-                print("Weak alignment")
-        
-        elif option == "2":  # Edit Distance
-            max_len = max(len(query_seq), target_len)
-            similarity = (1 - (score / max_len)) * 100
-            strength = classify_match_match_strength(similarity)
-            print(f"{i}. {name}:")
-            print(f"   Edit Distance: {score}")
-            print(f"   Similarity: {similarity:.2f}% → {strength} match")
-        
-        elif option == "3":  # Longest Common Subsequence (LCS)
-            query_coverage = (score / len(query_seq)) * 100
-            strength = classify_match_strength(query_coverage)
-            print(f"{i}. {name}:")
-            print(f"   LCS length: {score} bases")
-            print(f"   Query Coverage: {query_coverage:.2f}% → {strength} match")
-            if strength == "Strong":
-                print(" ✅ High confidence: Query is largely conserved in target.")
-def classify_match_strength(coverage):
-    """Classifies the match strength based on query coverage percentage."""
-    if coverage < 60:
-        return "Low"
-    elif 60 <= coverage < 75:
-        return "Medium"
+def classify_match_strength(similarity):
+    if similarity > 0.9:
+        return "Highly similar"
+    elif similarity > 0.75:
+        return "Moderately similar"
+    elif similarity > 0.5:
+        return "Some similarity"
     else:
-        return "Strong"
+        return "Low similarity"
+
+
+def interpret_results(results, query_seq, option):
+    if option not in ["1", "3"]:
+        return  # Only interpret LCS and LCSubstring
+
+    print("\n📊 Interpretation of Top 3 Results:")
+    results = sorted(results, key=lambda x: x[1], reverse=True)[:3]
+
+    for i, (name, score, segment) in enumerate(results, 1):
+        similarity = score / len(query_seq)
+        interpretation = classify_match_strength(similarity)
+        label = "LCS" if option == "3" else "LCSubstring"
+
+        print(f"\n{i}. 🧬 {name}")
+        print(f" {label} Length: {score}")
+        print(f" Query percentage: {similarity * 100:.2f}% : {interpretation} match")
+
+
     
 
 def main():
@@ -126,86 +106,71 @@ def main():
     
 
     # Compare query to each database sequence
-    if option == "1" or option == "3":
-        for name, sequence in db_data.items():
-            if option == "1":
-                score, segment = longest_common_substring(sequence, query_seq)
-            else:
-                score, segment = longest_common_sequence(sequence, query_seq)
 
-            results.append((name, score, segment))
-            print(f"→ Similarity with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
-
-            if score > best_score and (option == "1" or option == "3"):
-                best_score = score
-                best_name = name
-                best_match_segment = segment
-            elif option == "2" and score < best_score:
-                best_score = score
-                best_name = name
-                best_match_segment = segment
-    elif option == "2":
-        for name, sequence in db_data.items():
+    for name, sequence in db_data.items():
+        if option == "1":
+            score, segment = longest_common_substring(sequence, query_seq)
+        elif option == "2":
             score = edit_distance(sequence, query_seq)
             similarity = 1 - (score / max(len(sequence), len(query_seq)))
-
-            if similarity > 0.9:
-                interpretation = "Highly similar"
-            elif similarity > 0.75:
-                interpretation = "Moderately similar"
-            elif similarity > 0.5:
-                interpretation = "Some similarity"
-            else:
-                interpretation = "Low similarity"
-
+            interpretation = classify_match_strength(similarity)
             results.append([name, score, similarity, interpretation])
             print(f"→ Edit distance with '{name}': Score = {score}, Similarity = {similarity:.2f}, Interpretation = {interpretation}")
-
             if score < best_score:
                 best_score = score
                 best_name = name
                 best_interpretation = interpretation
-                best_similarity = similarity
+                best_similarity= similarity
+            continue
+        else:
+            score, segment = longest_common_sequence(sequence, query_seq)
 
-    # Output the best match
+        results.append((name, score, segment))
+        print(f"→ Match with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
+        if score > best_score:
+            best_score, best_name, best_segment = score, name, segment
+    
     print("\n✅ Most similar sequence found:")
     print(f"🧬 Name: {best_name}")
     print(f"📊 Score: {best_score}")
     if option == "1" or option == "3":
-        print(f"🧩 Matching Segment:{best_match_segment if best_match_segment else '[not shown]'}")
+        print(f"🧩 Segment: {best_segment if best_segment else '[not shown]'}")
     else:
-        print(f"🧩 Interpretations: {best_interpretation}")
-        print(f"🧩 Similarity: {best_similarity:.2f}")
-        print()
-        print("Sequences with High or Moderate Similarity:\n")
-        found_match = False
+        print(f"💭Interpretation: {best_interpretation}")
+        print(f"✨ Similarity: {best_similarity:.2f}")
+        print("\nSequences with High or Moderate Similarity:")
+        interpret_score = input("\n Would you like to interpret the top 3 results? (yes/no): ").strip().lower()
+        if interpret_score == "yes":
+            print("\n📊 Interpretation of Top 3 Results (Edit Distance):")
+            top3 = sorted(results, key=lambda x: x[1])[:3]
+            for i, (name, score, similarity, interpretation) in enumerate(top3, 1):
+                print(f"\n{i}. 🧬 {name}")
+                print(f" Score: {score}")
+                print(f"✨ Similarity: {similarity * 100:.2f}% : {interpretation} match")
 
-        for res in results:
-            if res[3] in ["Highly similar", "Moderately similar"]:
-                found_match = True
-                print(f"Sequence: {res[0]}")
-                print(f"Edit Distance: {res[1]}")
-                print(f"Similarity: {res[2]:.2f}")
-                print(f"Interpretation: {res[3]}")
-                print()
-    # Interpret the score
-    interprate_score = input("Would You like to interprate the score? (yes/no): ").strip().lower()
-    if interprate_score == "yes":
+    if option != "2" and input("\nInterpret top 3 matches? (yes/no): ").strip().lower() == "yes":
         interpret_results(results, query_seq, option)
+
 
     # Write results to a file
     with open("results.txt", "w") as out:
         out.write(f"Query: {query_name}\n")
-        out.write("Algorithm: Longest Common Substring\n")
+        out.write(f"Algorithm: {'LCSubstring' if option == '1' else 'Edit Distance' if option == '2' else 'LCS'}\n")
         out.write(f"Best Match: {best_name} (Score: {best_score})\n")
-        out.write(f"Matching Segment: {best_match_segment if best_match_segment else '[not shown]'}\n\n")
-        out.write("All Matches:\n")
-        for name, score, segment in sorted(results, key=lambda x: x[1], reverse=True):
-            out.write(f"{name}: Score = {score}, Match = {segment if segment else '[not shown]'}\n")
+        if option in ["1", "3"]:
+            out.write(f"Matching Segment: {best_segment if best_segment else '[not shown]'}\n")
+        else:
+            out.write(f"Similarity: {best_similarity:.2f}, Interpretation: {best_interpretation}\n")
 
-        if not found_match:
-            print("❌ None of the sequences are moderately or highly similar to the query sequence.")
+        out.write("\nAll Matches:\n")
+        if option == "2":
+            for name, score, similarity, interpretation in sorted(results, key=lambda x: x[1]):
+                out.write(f"{name}: Edit Distance = {score}, Similarity = {similarity:.2f}, Interpretation = {interpretation}\n")
+        else:
+            for name, score, segment in sorted(results, key=lambda x: x[1], reverse=True):
+                out.write(f"{name}: Score = {score}, Segment = {segment if segment else '[not shown]'}\n")
 
+    print("\n📝 Results saved to 'results.txt'")
 
     # # Write results to a file
     # with open("results.txt", "w") as out:
