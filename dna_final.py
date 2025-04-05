@@ -73,45 +73,88 @@ def main():
     best_name = ""
     best_match_segment = ""
     results = []
+    best_interpretation = ""
+    best_similarity = 0.0
 
     # Compare query to each database sequence
-    for name, sequence in db_data.items():
-        if option == "1":
-          score, segment = longest_common_substring(sequence, query_seq)
-        elif option == "2":
-          score = edit_distance(sequence, query_seq)
-          segment = ""
-        else:
-          score, segment = longest_common_sequence(sequence, query_seq)
-        results.append((name, score, segment))
-        print(f"→ Similarity with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
+    if option == "1" or option == "3":
+        for name, sequence in db_data.items():
+            if option == "1":
+                score, segment = longest_common_substring(sequence, query_seq)
+            else:
+                score, segment = longest_common_sequence(sequence, query_seq)
 
-        if score > best_score and (option == "1" or option == "3"):
-            best_score = score
-            best_name = name
-            best_match_segment = segment
-        elif option == "2" and score < best_score:
-            best_score = score
-            best_name = name
-            best_match_segment = segment
+            results.append((name, score, segment))
+            print(f"→ Similarity with '{name}': Score = {score}, Match = {segment if segment else '[not shown]'}")
+
+            if score > best_score and (option == "1" or option == "3"):
+                best_score = score
+                best_name = name
+                best_match_segment = segment
+            elif option == "2" and score < best_score:
+                best_score = score
+                best_name = name
+                best_match_segment = segment
+    elif option == "2":
+        for name, sequence in db_data.items():
+            score = edit_distance(sequence, query_seq)
+            similarity = 1 - (score / max(len(sequence), len(query_seq)))
+
+            if similarity > 0.9:
+                interpretation = "Highly similar"
+            elif similarity > 0.75:
+                interpretation = "Moderately similar"
+            elif similarity > 0.5:
+                interpretation = "Some similarity"
+            else:
+                interpretation = "Low similarity"
+
+            results.append([name, score, similarity, interpretation])
+            print(f"→ Edit distance with '{name}': Score = {score}, Similarity = {similarity:.2f}, Interpretation = {interpretation}")
+
+            if score < best_score:
+                best_score = score
+                best_name = name
+                best_interpretation = interpretation
+                best_similarity = similarity
 
     # Output the best match
     print("\n✅ Most similar sequence found:")
     print(f"🧬 Name: {best_name}")
     print(f"📊 Score: {best_score}")
-    print(f"🧩 Matching Segment: {best_match_segment if best_match_segment else '[not shown]'}")
+    if option == "1" or option == "3":
+        print(f"🧩 Matching Segment:{best_match_segment if best_match_segment else '[not shown]'}")
+    else:
+        print(f"🧩 Interpretations: {best_interpretation}")
+        print(f"🧩 Similarity: {best_similarity:.2f}")
+        print()
+        print("Sequences with High or Moderate Similarity:\n")
+        found_match = False
 
-    # Write results to a file
-    with open("results.txt", "w") as out:
-        out.write(f"Query: {query_name}\n")
-        out.write("Algorithm: Longest Common Substring\n")
-        out.write(f"Best Match: {best_name} (Score: {best_score})\n")
-        out.write(f"Matching Segment: {best_match_segment if best_match_segment else '[not shown]'}\n\n")
-        out.write("All Matches:\n")
-        for name, score, segment in sorted(results, key=lambda x: x[1], reverse=True):
-            out.write(f"{name}: Score = {score}, Match = {segment if segment else '[not shown]'}\n")
+        for res in results:
+            if res[3] in ["Highly similar", "Moderately similar"]:
+                found_match = True
+                print(f"Sequence: {res[0]}")
+                print(f"Edit Distance: {res[1]}")
+                print(f"Similarity: {res[2]:.2f}")
+                print(f"Interpretation: {res[3]}")
+                print()
 
-    print("\n📝 Results saved to 'results.txt'")
+        if not found_match:
+            print("❌ None of the sequences are moderately or highly similar to the query sequence.")
+
+
+    # # Write results to a file
+    # with open("results.txt", "w") as out:
+    #     out.write(f"Query: {query_name}\n")
+    #     out.write("Algorithm: Longest Common Substring\n")
+    #     out.write(f"Best Match: {best_name} (Score: {best_score})\n")
+    #     out.write(f"Matching Segment: {best_match_segment if best_match_segment else '[not shown]'}\n\n")
+    #     out.write("All Matches:\n")
+    #     for name, score, segment,  in sorted(results, key=lambda x: x[1], reverse=True):
+    #         out.write(f"{name}: Score = {score}, Match = {segment if segment else '[not shown]'}\n")
+
+    # print("\n📝 Results saved to 'results.txt'")
 
 
 if __name__ == "__main__":
